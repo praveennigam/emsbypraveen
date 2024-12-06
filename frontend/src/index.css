@@ -1,0 +1,77 @@
+/* Global Styles */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: 'Arial', sans-serif;
+}
+
+/* Gradient background for the entire page */
+body {
+  background: linear-gradient(135deg, #3498db, #2ecc71); /* Gradient from blue to green */
+  min-height: 100vh; /* Ensure full height */
+  display: flex;
+  flex-direction: column; /* To ensure content is stacked */
+  justify-content: flex-start;
+}
+
+/* Ensure content is aligned in the center */
+.container {
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+h1, h2, h3, p {
+  color: white; /* White text on dark background for contrast */
+}
+
+/* Make sure all images and videos are responsive */
+img, video {
+  max-width: 100%;
+  height: auto;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  body {
+    background: linear-gradient(135deg, #e74c3c, #8e44ad); /* Gradient from red to purple for smaller screens */
+  }
+
+  /* Adjust font size for smaller screens */
+  h1 {
+    font-size: 28px;
+  }
+
+  h2 {
+    font-size: 24px;
+  }
+
+  h3 {
+    font-size: 20px;
+  }
+
+  p {
+    font-size: 16px;
+  }
+}
+
+/* Further responsive behavior for very small screens (mobile) */
+@media (max-width: 480px) {
+  body {
+    background: linear-gradient(135deg, #f39c12, #d35400); /* Gradient from orange to dark orange for mobile */
+  }
+
+  .container {
+    padding: 10px;
+  }
+
+  h1 {
+    font-size: 22px;
+  }
+
+  p {
+    font-size: 14px;
+  }
+}

@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Login</title>
+</head>
+
+<body>
+  <h2>Login</h2>
+  <form id="loginForm">
+    <input type="email" id="email" placeholder="Email" required>
+    <input type="password" id="password" placeholder="Password" required>
+    <button type="submit">Login</button>
+  </form>
+
+  <script>
+    document.getElementById('loginForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      const data = {
+        email: document.getElementById('email').value,
+        password: document.getElementById('password').value,
+      };
+
+      try {
+        const response = await fetch('http://localhost:5000/api/emp/login', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(data),
+        });
+
+        const result = await response.json();
+        console.log('Login response:', result);  // Debugging: Check login response
+
+        if (response.status === 200) {
+          // Store token, user ID, and role in localStorage
+          localStorage.setItem('token', result.token);  // Store JWT token
+          localStorage.setItem('userId', result.id);    // Store user ID
+          localStorage.setItem('role', result.role);    // Store user role (admin, employee, etc.)
+
+          // Redirect to dashboard or appropriate page based on the role
+          if (result.role === 'admin') {
+            window.location.href = '/admin-dashboard';  // Redirect to the admin dashboard if role is admin
+          } else if (result.role === 'employee') {
+            window.location.href = '/employee-dashboard';  // Redirect to the employee dashboard
+          } else {
+            window.location.href = '/dashboard';  // Default redirection for other roles
+          }
+        } else {
+          // Display backend error message if login fails
+          alert(result.message || 'Login failed');
+        }
+      } catch (error) {
+        console.error('Login error:', error);
+        alert('Error during login');
+      }
+    });
+  </script>
+
+</body>
+
+</html>

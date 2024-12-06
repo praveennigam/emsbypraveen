@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>My Profile</title>
+  <link rel="stylesheet" href="/styles/styles.css">
+</head>
+
+<body>
+  <h1>My Profile</h1>
+
+  <!-- Buttons for Edit and Save (Placed at the top) -->
+  <div>
+    <button id="edit-btn" onclick="toggleEditMode()">Edit Profile</button>
+    <button id="save-btn" onclick="saveProfile()" style="display:none;">Save Changes</button>
+  </div>
+
+  <div id="profile-details">
+    <!-- Profile fields display (initially static) -->
+    <p><strong>Employee ID:</strong> <span id="empId"></span></p>
+    <p><strong>Name:</strong> <span id="name"></span><input type="text" id="name-edit" class="edit-input"
+        style="display:none;"></p>
+    <p><strong>Email:</strong> <span id="email"></span><input type="email" id="email-edit" class="edit-input"
+        style="display:none;"></p>
+    <p><strong>Role:</strong> <span id="role"></span><input type="text" id="role-edit" class="edit-input"
+        style="display:none;"></p>
+    <p><strong>Department:</strong> <span id="department"></span><input type="text" id="department-edit"
+        class="edit-input" style="display:none;"></p>
+    <p><strong>Contact:</strong> <span id="contact"></span><input type="text" id="contact-edit" class="edit-input"
+        style="display:none;"></p>
+    <p><strong>Gender:</strong> <span id="gender"></span><input type="text" id="gender-edit" class="edit-input"
+        style="display:none;"></p>
+    <p><strong>Date of Birth:</strong> <span id="dob"></span><input type="date" id="dob-edit" class="edit-input"
+        style="display:none;"></p>
+    <p><strong>Salary:</strong> <span id="salary"></span><input type="number" id="salary-edit" class="edit-input"
+        style="display:none;"></p>
+    <p><strong>Education:</strong> <span id="education"></span><input type="text" id="education-edit" class="edit-input"
+        style="display:none;"></p>
+    <p><strong>Work Experience:</strong> <span id="workExperience"></span><input type="text" id="workExperience-edit"
+        class="edit-input" style="display:none;"></p>
+    <p><strong>Skills:</strong> <span id="skills"></span><input type="text" id="skills-edit" class="edit-input"
+        style="display:none;"></p>
+    <p><strong>Certifications:</strong> <span id="certifications"></span><input type="text" id="certifications-edit"
+        class="edit-input" style="display:none;"></p>
+    <p><strong>Manager Name:</strong> <span id="managerName"></span><input type="text" id="managerName-edit"
+        class="edit-input" readonly style="display:none;"></p>
+
+    <!-- Profile Image -->
+    <p><strong>Profile Image:</strong> <span id="image"></span><input type="file" id="image-edit" class="edit-input"
+        style="display:none;"></p>
+
+    <!-- Read-Only Fields -->
+    <p><strong>Performance Rating:</strong> <span id="performanceRating"></span><input type="number"
+        id="performanceRating-edit" class="edit-input" readonly style="display:none;"></p>
+    <p><strong>Employment Type:</strong> <span id="employmentType"></span><input type="text" id="employmentType-edit"
+        class="edit-input" readonly style="display:none;"></p>
+    <p><strong>Hire Date:</strong> <span id="hireDate"></span><input type="date" id="hireDate-edit" class="edit-input"
+        readonly style="display:none;"></p>
+    <p><strong>Employment Status:</strong> <span id="employmentStatus"></span><input type="text"
+        id="employmentStatus-edit" class="edit-input" readonly style="display:none;"></p>
+    <p><strong>Last Promotion Date:</strong> <span id="lastPromotionDate"></span><input type="date"
+        id="lastPromotionDate-edit" class="edit-input" readonly style="display:none;"></p>
+
+    <!-- Sensitive Fields -->
+    <p><strong>Is Married:</strong> <span id="isMarried"></span><input type="checkbox" id="isMarried-edit"
+        class="edit-input" style="display:none;"></p>
+    <p><strong>Is Active:</strong> <span id="isActive"></span><input type="checkbox" id="isActive-edit"
+        class="edit-input" style="display:none;"></p>
+  </div>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', function () {
+      const userId = localStorage.getItem('userId');
+      const token = localStorage.getItem('token');  // Assuming token is saved in localStorage
+
+      if (!userId || !token) {
+        alert('You are not logged in. Please login first.');
+        window.location.href = '/login';  // Redirect to login page
+        return;
+      }
+
+      // Fetch profile data using the userId and token
+      fetch(`/api/emp/employees/${userId}`, {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      })
+        .then(response => response.json())
+        .then(data => {
+          if (data && data._id) {
+            // Populate the profile details dynamically
+            populateProfile(data);
+          } else {
+            alert('Failed to fetch profile data.');
+          }
+        })
+        .catch(error => {
+          console.error('Error fetching profile details:', error);
+          alert('Error fetching profile data.');
+        });
+    });
+
+    // Function to toggle between view and edit modes
+    function toggleEditMode() {
+      const elementsToToggle = document.querySelectorAll('.edit-input');
+      const displayFields = document.querySelectorAll('#profile-details span');
+
+      elementsToToggle.forEach(inputField => {
+        if (inputField.hasAttribute('readonly') || inputField.hasAttribute('disabled')) {
+          inputField.style.display = 'none';
+        } else {
+          inputField.style.display = inputField.style.display === 'none' ? 'inline-block' : 'none';
+        }
+      });
+
+      displayFields.forEach(span => {
+        span.style.display = span.style.display === 'none' ? 'inline' : 'none';
+      });
+
+      // Toggle visibility of Edit and Save buttons
+      document.getElementById('edit-btn').style.display = document.getElementById('edit-btn').style.display === 'none' ? 'inline-block' : 'none';
+      document.getElementById('save-btn').style.display = document.getElementById('save-btn').style.display === 'none' ? 'inline-block' : 'none';
+    }
+
+    // Function to save the updated profile data
+    function saveProfile() {
+      const userId = localStorage.getItem('userId');
+      const token = localStorage.getItem('token');
+
+      const updatedData = {
+        name: document.getElementById('name-edit').value,
+        email: document.getElementById('email-edit').value,
+        role: document.getElementById('role-edit').value,
+        department: document.getElementById('department-edit').value,
+        contactNumber: document.getElementById('contact-edit').value,
+        gender: document.getElementById('gender-edit').value,
+        dateOfBirth: document.getElementById('dob-edit').value,
+        salary: document.getElementById('salary-edit').value,
+        education: document.getElementById('education-edit').value,
+        workExperience: document.getElementById('workExperience-edit').value,
+        skills: document.getElementById('skills-edit').value.split(',').map(skill => skill.trim()),
+        certifications: document.getElementById('certifications-edit').value.split(',').map(cert => cert.trim()),
+        isMarried: document.getElementById('isMarried-edit').checked,
+        isActive: document.getElementById('isActive-edit').checked,
+      };
+
+      // If there is an image file selected, append it to the updatedData object
+      const imageInput = document.getElementById('image-edit');
+      if (imageInput.files.length > 0) {
+        updatedData.image = imageInput.files[0];  // Assuming you handle the image upload server-side
+      }
+      fetch(`/api/emp/employees/${userId}`, {
+        method: 'PUT',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(updatedData)
+      })
+        .then(response => response.json())
+        .then(data => {
+          if (data && data._id) {
+            // Successfully saved profile, now update the display with the new data
+            alert('Profile updated successfully.');
+            populateProfile(data);  // Populate the profile with updated values
+            toggleEditMode();  // Switch back to view mode
+          } else {
+            alert('Failed to update profile.');
+          }
+        })
+        .catch(error => {
+          console.error('Error saving profile:', error);
+          alert('Error updating profile.');
+        });
+    }
+
+    // Function to populate the profile with fetched or saved data
+    function populateProfile(data) {
+      // Populate read-only fields (showing both in the span and edit inputs)
+      document.getElementById('empId').innerText = data.empId; // empId is shown as text only
+      document.getElementById('name').innerText = data.name;
+      document.getElementById('email').innerText = data.email;
+      document.getElementById('role').innerText = data.role;
+      document.getElementById('department').innerText = data.department;
+      document.getElementById('contact').innerText = data.contactNumber;
+      document.getElementById('gender').innerText = data.gender;
+      document.getElementById('dob').innerText = new Date(data.dateOfBirth).toLocaleDateString(); // Format date as 'MM/DD/YYYY'
+      document.getElementById('salary').innerText = data.salary;
+      document.getElementById('education').innerText = data.education;
+      document.getElementById('workExperience').innerText = data.workExperience;
+      document.getElementById('skills').innerText = data.skills.join(', ');
+      document.getElementById('certifications').innerText = data.certifications.join(', ');
+      document.getElementById('managerName').innerText = data.managerName;
+
+      // Read-Only fields
+      document.getElementById('performanceRating').innerText = data.performanceRating;
+      document.getElementById('employmentType').innerText = data.employmentType;
+      document.getElementById('hireDate').innerText = new Date(data.hireDate).toLocaleDateString(); // Format as 'MM/DD/YYYY'
+      document.getElementById('employmentStatus').innerText = data.employmentStatus;
+      document.getElementById('lastPromotionDate').innerText = new Date(data.lastPromotionDate).toLocaleDateString(); // Format date as 'MM/DD/YYYY'
+
+      // Sensitive fields
+      document.getElementById('isMarried').checked = data.isMarried;
+      document.getElementById('isActive').checked = data.isActive;
+
+      // Update editable inputs (only visible when in edit mode)
+      document.getElementById('name-edit').value = data.name;
+      document.getElementById('email-edit').value = data.email;
+      document.getElementById('role-edit').value = data.role;
+      document.getElementById('department-edit').value = data.department;
+      document.getElementById('contact-edit').value = data.contactNumber;
+      document.getElementById('gender-edit').value = data.gender;
+      document.getElementById('dob-edit').value = data.dateOfBirth ? new Date(data.dateOfBirth).toISOString().split('T')[0] : ''; // Format date to YYYY-MM-DD
+      document.getElementById('salary-edit').value = data.salary;
+      document.getElementById('education-edit').value = data.education;
+      document.getElementById('workExperience-edit').value = data.workExperience;
+      document.getElementById('skills-edit').value = data.skills.join(', ');
+      document.getElementById('certifications-edit').value = data.certifications.join(', ');
+      document.getElementById('managerName-edit').value = data.managerName;
+
+      // Update checkbox inputs
+      document.getElementById('isMarried-edit').checked = data.isMarried;
+      document.getElementById('isActive-edit').checked = data.isActive;
+
+      // Display the profile image (if available)
+      if (data.image) {
+        document.getElementById('image').innerHTML = `<img src="${data.image}" alt="Profile Image" width="100" height="100">`;
+      }
+
+      // Enable the image input in edit mode
+      document.getElementById('image-edit').value = '';  // Reset image input field
+    }
+  </script>
+</body>
+
+</html>

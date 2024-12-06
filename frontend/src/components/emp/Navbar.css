@@ -1,0 +1,193 @@
+/* General Navbar Styles */
+.navbar {
+  background: linear-gradient(90deg, rgba(0, 123, 255, 1) 0%, rgba(13, 110, 253, 1) 100%);
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  width: 100%;
+  padding: 10px 0;
+  z-index: 1000;
+  box-shadow: 0 6px 15px rgba(0, 0, 0, 0.1);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  animation: fadeIn 1s ease-out; /* Fade-in animation */
+  transition: background-color 0.3s ease-in-out; /* Smooth background change on hover */
+}
+
+.navbar:hover {
+  background: linear-gradient(90deg, rgba(13, 110, 253, 1) 0%, rgba(0, 123, 255, 1) 100%);
+}
+
+/* Navbar brand */
+.navbar-brand {
+  font-size: 28px;
+  font-weight: 700;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  transition: transform 0.3s ease-in-out;
+}
+
+.navbar-brand:hover {
+  transform: scale(1.05);
+}
+
+.navbar-brand .fas.fa-building {
+  margin-right: 10px;
+  font-size: 32px;
+  transition: transform 0.3s ease-in-out;
+}
+
+.navbar-brand .fas.fa-building:hover {
+  transform: rotate(20deg);
+}
+
+/* Navbar items */
+.navbar-nav {
+  display: flex;
+  align-items: center;
+  transition: opacity 0.3s ease;
+  list-style: none; /* Removes default list item bullets */
+  margin: 0; /* Removes any margin from the list */
+}
+
+.navbar-nav .nav-item {
+  margin-left: 20px;
+  position: relative;
+  list-style-type: none; /* Ensures no list bullet appears */
+}
+
+/* Navbar link */
+.nav-link {
+  color: #fff !important;
+  font-size: 16px;
+  display: inline-flex;
+  align-items: center;
+  position: relative;
+  padding: 5px 10px;
+  text-transform: uppercase;
+  font-weight: 500;
+  transition: color 0.3s ease, transform 0.3s ease-in-out;
+  background: linear-gradient(45deg, #f06, #48c6ef);
+  -webkit-background-clip: text; /* Makes text gradient visible */
+  color: transparent; /* Initially make text transparent */
+}
+
+/* Gradient icon styling */
+.icon {
+  font-size: 20px;
+  margin-right: 10px;
+  background: linear-gradient(45deg, #f06, #48c6ef);
+  -webkit-background-clip: text;
+  color: transparent;
+  transition: background 0.3s ease-in-out, transform 0.3s ease-in-out;
+}
+
+/* Hover effect for icon */
+.nav-link:hover .icon {
+  background: linear-gradient(45deg, #48c6ef, #f06);
+  transform: scale(1.1);
+  color: transparent;
+  -webkit-background-clip: text;
+}
+
+/* Hover effect for text */
+.nav-link:hover {
+  color: transparent;
+  background: linear-gradient(45deg, #48c6ef, #f06);
+  -webkit-background-clip: text;
+  transform: scale(1.1);
+}
+
+/* Hover effects for logout and login buttons */
+.navbar-nav .nav-item button {
+  color: #fff;
+  font-size: 16px;
+  border: none;
+  background: none;
+  display: flex;
+  align-items: center;
+  transition: color 0.3s ease, transform 0.3s ease-in-out;
+}
+
+.navbar-nav .nav-item button:hover {
+  color: #48c6ef;
+  transform: scale(1.05);
+}
+
+/* Hide text and only show icons on medium and smaller devices (<= 992px) */
+@media (max-width: 992px) {
+  .navbar-nav .nav-item .nav-link span {
+    display: none;
+  }
+  .navbar-nav .nav-item {
+    margin-left: 10px;
+  }
+  .navbar-nav {
+    flex-direction: row;
+    justify-content: space-evenly;
+    opacity: 0;
+    animation: fadeInUp 0.5s ease-in-out forwards; /* Slide-up animation for navbar items */
+  }
+}
+
+/* Adjustments for mobile screens (<= 768px) */
+@media (max-width: 768px) {
+  .navbar {
+    flex-direction: column;
+    padding: 20px 0;
+  }
+  .navbar-nav {
+    flex-direction: column;
+    width: 100%;
+    text-align: center;
+  }
+  .navbar-nav .nav-item {
+    margin-left: 0;
+    margin-bottom: 10px;
+  }
+  .navbar-collapse {
+    text-align: center;
+  }
+  .navbar-nav .nav-item {
+    animation: slideIn 0.5s ease-in-out forwards;
+  }
+}
+
+/* Fade-in animation */
+@keyframes fadeIn {
+  0% {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Slide-up animation for medium screens */
+@keyframes fadeInUp {
+  0% {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Slide-in animation for small screens */
+@keyframes slideIn {
+  0% {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}

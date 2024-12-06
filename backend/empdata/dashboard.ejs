@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dashboard</title>
+</head>
+
+<body>
+  <h2>Welcome to Dashboard</h2>
+  <button onclick="window.location.href='/create-employee'">Create Employee</button>
+  <button onclick="window.location.href='/all-employees'">All Employees</button>
+  <button onclick="window.location.href='/my-profile'">My Profile</button>
+  <button onclick="window.location.href='/update-profile'">Update Profile</button>
+
+  <script>
+    const token = localStorage.getItem('token');
+    if (!token) {
+      window.location.href = '/login';  // Redirect to login if not authenticated
+    }
+  </script>
+</body>
+
+</html>

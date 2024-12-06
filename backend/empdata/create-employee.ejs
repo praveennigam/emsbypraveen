@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Create Employee</title>
+</head>
+
+<body>
+  <h2>Create Employee</h2>
+  <form id="createEmployeeForm">
+    <input type="email" id="email" placeholder="Email" required>
+    <input type="password" id="password" placeholder="Password" required>
+    <select id="role">
+      <option value="employee">Employee</option>
+      <option value="hr">HR</option>
+      <option value="manager">Manager</option>
+      <option value="admin">Admin</option>
+    </select>
+    <input type="file" id="image" accept="image/*">
+    <button type="submit">Create</button>
+  </form>
+
+  <script>
+    document.getElementById('createEmployeeForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      const token = localStorage.getItem('token');
+      if (!token) {
+        alert('Please login first.');
+        window.location.href = '/login';
+      }
+
+      const data = new FormData();
+      data.append('email', document.getElementById('email').value);
+      data.append('password', document.getElementById('password').value);
+      data.append('role', document.getElementById('role').value);
+      data.append('image', document.getElementById('image').files[0]);
+
+      try {
+        const response = await fetch('http://localhost:5000/api/emp/employees', {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+          },
+          body: data,
+        });
+        const result = await response.json();
+        if (response.status === 201) {
+          alert('Employee created successfully!');
+        } else {
+          alert(result.message);
+        }
+      } catch (error) {
+        alert('Error creating employee');
+      }
+    });
+  </script>
+</body>
+
+</html>
