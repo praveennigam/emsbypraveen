@@ -3,7 +3,8 @@
   "version": "1.0.0",
   "main": "server.js",
   "scripts": {
-    "start": "node server.js",
+    "build": "tsc",
+    "start": "node dist/server.js",
     "dev": "nodemon server.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
@@ -30,5 +31,8 @@
     "pdfkit": "^0.15.1",
     "socket.io": "^4.8.1",
     "validator": "^13.12.0"
+  },
+  "devDependencies": {
+    "typescript": "^5.7.2"
   }
 }
