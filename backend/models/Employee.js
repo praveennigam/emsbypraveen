@@ -6,6 +6,8 @@ const employeeSchema = new mongoose.Schema({
   empId: { type: Number, unique: true },
   name: { type: String, required: true },
   email: { type: String, required: true, unique: true },
+  address: { type: String },
+
   role: {
     type: String,
     required: true,
@@ -35,7 +37,7 @@ const employeeSchema = new mongoose.Schema({
   approvalStatus: {
     type: String,
     enum: ['pending', 'approved', 'rejected'],
-    default: 'pending',
+    default: 'approved',
   },
   dateOfJoining: { type: Date, default: Date.now },
   endDate: { type: Date },

@@ -2,8 +2,7 @@ const express = require('express');
 const router = express.Router();
 const employeeController = require('../controllers/employeeController');
 const { authMiddleware, roleMiddleware } = require('../middleware/authMiddleware');
-const multer = require('multer');
-const upload = multer({ dest: 'uploads/' });
+const upload = require('../middleware/uploadMiddleware'); // Import the multer middleware
 
 router.post('/signup', employeeController.signup);
 router.post('/login', employeeController.login);
@@ -20,15 +19,15 @@ router.put('/employees/:emp_id/assign-manager', authMiddleware, roleMiddleware([
 router.get('/employees/:emp_id/juniors', authMiddleware, roleMiddleware(['admin', 'manager']), employeeController.getManagedEmployees);
 
 router.get('/me', authMiddleware, employeeController.getMyDetails);
-router.put('/approve-reject/:id', authMiddleware, roleMiddleware(['admin', 'hr']), employeeController.approveRejectEmployee);
 router.put('/profile', authMiddleware, employeeController.updateProfile);
 
+// Image-related Routes
+router.post('/upload-image/:id', upload.single('image'), employeeController.uploadEmployeeImage);
+router.get('/employee-image/:id', employeeController.getEmployeeImage);
+router.put('/update-image/:id', upload.single('image'), employeeController.updateEmployeeImage);
+router.delete('/delete-image/:id', employeeController.deleteEmployeeImage);
+
 module.exports = router;
-
-
-
-
-
 
 
 

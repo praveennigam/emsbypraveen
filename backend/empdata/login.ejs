@@ -5,6 +5,185 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Login</title>
+
+  <style>
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(135deg, #1e3d59, #004f6d);
+      color: #f5f5f5;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      overflow-y: auto;
+      margin: 0;
+    }
+
+    h2 {
+      color: #c5c3c3;
+      margin-top: 30px;
+      font-size: 36px;
+      text-align: center;
+    }
+
+    #loginForm {
+      background: linear-gradient(145deg, rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.3));
+      padding: 30px;
+      border-radius: 12px;
+      box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
+      width: 100%;
+      max-width: 420px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      backdrop-filter: blur(8px);
+      margin: 0 auto;
+    }
+
+    input[type="email"], input[type="password"] {
+      padding: 12px 20px;
+      font-size: 14px;
+      border-radius: 8px;
+      border: 1px solid rgba(255, 255, 255, 0.6);
+      width: 100%;
+      background-color: rgba(255, 255, 255, 0.3);
+      color: #f5f5f5;
+      margin-bottom: 20px;
+      box-sizing: border-box;
+    }
+
+    input[type="email"]:focus, input[type="password"]:focus {
+      border-color: #fbc02d;
+      outline: none;
+    }
+
+    button {
+      padding: 12px 20px;
+      background-color: #00796b;
+      color: #fff;
+      font-size: 16px;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+      width: 100%;
+      margin-bottom: 15px;
+    }
+
+    button:hover {
+      background-color: #004d40;
+    }
+
+    button:disabled {
+      background-color: rgba(255, 255, 255, 0.2);
+      cursor: not-allowed;
+    }
+
+    #forgot-password {
+      color: #fbc02d;
+      text-decoration: none;
+      font-size: 14px;
+      margin-top: 10px;
+    }
+
+    #forgot-password:hover {
+      text-decoration: underline;
+    }
+
+    #register-link {
+      color: #fbc02d;
+      text-decoration: none;
+      font-size: 14px;
+      margin-top: 20px;
+    }
+
+    #register-link:hover {
+      text-decoration: underline;
+    }
+
+    .alert {
+      background-color: rgba(248, 215, 218, 0.2);
+      border-left: 5px solid #dc3545;
+      padding: 15px;
+      margin-top: 20px;
+      border-radius: 8px;
+      color: #f5f5f5;
+    }
+
+    .alert.success {
+      background-color: rgba(72, 182, 92, 0.2);
+      border-left: 5px solid #28a745;
+    }
+
+    .alert.error {
+      background-color: rgba(248, 215, 218, 0.2);
+      border-left: 5px solid #dc3545;
+    }
+
+    .alert.warning {
+      background-color: rgba(255, 243, 205, 0.2);
+      border-left: 5px solid #ffc107;
+    }
+
+    @media (max-width: 768px) {
+      body {
+        padding: 15px;
+      }
+
+      h2 {
+        font-size: 28px;
+      }
+
+      #loginForm {
+        padding: 25px;
+        max-width: 90%;
+      }
+
+      input[type="email"], input[type="password"] {
+        font-size: 16px;
+      }
+
+      button {
+        font-size: 14px;
+      }
+
+      #forgot-password, #register-link {
+        font-size: 12px;
+      }
+    }
+
+    @media (max-width: 480px) {
+      body {
+        padding: 10px;
+      }
+
+      h2 {
+        font-size: 24px;
+      }
+
+      #loginForm {
+        padding: 20px;
+        width: 100%;
+        max-width: 100%;
+      }
+
+      input[type="email"], input[type="password"] {
+        font-size: 14px;
+        padding: 10px 15px;
+      }
+
+      button {
+        font-size: 14px;
+        padding: 10px 15px;
+      }
+
+      #forgot-password, #register-link {
+        font-size: 12px;
+      }
+    }
+  </style>
 </head>
 
 <body>
@@ -13,6 +192,7 @@
     <input type="email" id="email" placeholder="Email" required>
     <input type="password" id="password" placeholder="Password" required>
     <button type="submit">Login</button>
+    <a href="/signup" id="register-link">Don't have an account? Sign up</a>
   </form>
 
   <script>
@@ -34,32 +214,25 @@
         });
 
         const result = await response.json();
-        console.log('Login response:', result);  // Debugging: Check login response
 
         if (response.status === 200) {
-          // Store token, user ID, and role in localStorage
-          localStorage.setItem('token', result.token);  // Store JWT token
-          localStorage.setItem('userId', result.id);    // Store user ID
-          localStorage.setItem('role', result.role);    // Store user role (admin, employee, etc.)
+          localStorage.setItem('token', result.token);
+          localStorage.setItem('userId', result.userId);
+          localStorage.setItem('userName', result.employee.name); 
+          localStorage.setItem('role', result.employee.role);
 
-          // Redirect to dashboard or appropriate page based on the role
-          if (result.role === 'admin') {
-            window.location.href = '/admin-dashboard';  // Redirect to the admin dashboard if role is admin
-          } else if (result.role === 'employee') {
-            window.location.href = '/employee-dashboard';  // Redirect to the employee dashboard
-          } else {
-            window.location.href = '/dashboard';  // Default redirection for other roles
-          }
+          alert('Login successful!');
+          window.location.href = '/dashboard'; 
         } else {
-          // Display backend error message if login fails
-          alert(result.message || 'Login failed');
+          alert(result.message);  
         }
       } catch (error) {
-        console.error('Login error:', error);
         alert('Error during login');
+        console.error('Error during login:', error);  
       }
     });
   </script>
+    <%- include('partials/footer') %> 
 
 </body>
 

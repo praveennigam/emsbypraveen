@@ -6,21 +6,17 @@ const fs = require('fs');
 const path = require('path');
 const PDFDocument = require('pdfkit');
 
-// Generate Offer Letter PDF
-const generateOfferLetter = async (offerDetails, filePath) => {
-  const pdfDocument = new PDFDocument();
-  pdfDocument.pipe(fs.createWriteStream(filePath));
-  pdfDocument.fontSize(12).text(`Offer Letter for ${offerDetails.name}`, { align: 'center' });
-  pdfDocument.text(`Position: ${offerDetails.position}`);
-  pdfDocument.text(`Salary: ${offerDetails.salary}`);
-  pdfDocument.text(`Start Date: ${offerDetails.startDate}`);
-  pdfDocument.end();
-};
-
-// Send Offer Letter via Email
+// Utility function to generate the offer letter PDF
 const sendOfferLetter = async (email, offerDetails) => {
   try {
-    const offerLetterPath = path.join(__dirname, 'uploads', `offer_letter_${offerDetails.name}.pdf`);
+    const offerLetterDir = path.join(__dirname, 'uploads');
+    
+    // Ensure the 'uploads' directory exists
+    if (!fs.existsSync(offerLetterDir)) {
+      fs.mkdirSync(offerLetterDir);
+    }
+
+    const offerLetterPath = path.join(offerLetterDir, `offer_letter_${offerDetails.name.replace(/\s+/g, '_')}.pdf`);
     await generateOfferLetter(offerDetails, offerLetterPath);
 
     let transporter = nodemailer.createTransport({
@@ -28,6 +24,8 @@ const sendOfferLetter = async (email, offerDetails) => {
       auth: {
         user: process.env.EMAIL_USER,
         pass: process.env.EMAIL_PASS,
+
+        
       },
     });
 
@@ -46,92 +44,207 @@ const sendOfferLetter = async (email, offerDetails) => {
 
     await transporter.sendMail(mailOptions);
     console.log('Offer letter sent successfully.');
-    fs.unlinkSync(offerLetterPath);
+    fs.unlinkSync(offerLetterPath); // Delete the file after sending the email
   } catch (error) {
-    console.error('Error sending offer letter: ', error);
+    console.error('Error sending offer letter:', error);
   }
 };
 
-// Signup Logic
-const signup = async (req, res) => {
-  const { name, email, password, role, department, contactNumber, address, dateOfBirth } = req.body;
 
+
+
+
+// Utility function to generate the offer letter PDF
+const generateOfferLetter = async (offerDetails, filePath) => {
+  const pdfDocument = new PDFDocument();
+  pdfDocument.pipe(fs.createWriteStream(filePath));
+
+  // Header
+  pdfDocument.fontSize(18).text('OFFER LETTER', { align: 'center', bold: true });
+  pdfDocument.moveDown(2);
+
+  // Salutation and Subject
+  pdfDocument.fontSize(14).text(`Dear ${offerDetails.name},`, { bold: true });
+  pdfDocument.moveDown();
+
+  // Introduction
+  pdfDocument.fontSize(12).text(`We are pleased to offer you the position of  ${offerDetails.department} at TheWebSeller Pvt. Ltd.`);
+  pdfDocument.moveDown();
+
+  // Employee Details
+  pdfDocument.text(`Position: ${offerDetails.role}`);
+  pdfDocument.text(`Salary: ${offerDetails.salary ? `${offerDetails.salary.toLocaleString()} LPA` : 'N/A'}`);
+  pdfDocument.text(`Date of Joining: ${offerDetails.dateOfJoining ? new Date(offerDetails.dateOfJoining).toLocaleDateString() : 'N/A'}`);
+  pdfDocument.text(`Location: ${offerDetails.workLocation || 'N/A'}`);
+  pdfDocument.text(`Probation Period: ${offerDetails.probationPeriodEnd ? new Date(offerDetails.probationPeriodEnd).toLocaleDateString() : 'N/A'}`);
+  pdfDocument.moveDown();
+
+  // Contact and Emergency Information
+  pdfDocument.text(`Contact: ${offerDetails.contactNumber || 'N/A'}`);
+  pdfDocument.text(`Emergency Contact: ${offerDetails.emergencyContact ? `${offerDetails.emergencyContact.name} - ${offerDetails.emergencyContact.phone}` : 'N/A'}`);
+  pdfDocument.moveDown();
+
+  // Closing Remarks
+  pdfDocument.text('We are excited about the opportunity to have you on board and look forward to your contributions at TheWebSeller Pvt. Ltd.');
+  pdfDocument.moveDown();
+
+  // Warm Regards & Signature
+  pdfDocument.text('Warm Regards,');
+  pdfDocument.moveDown();
+  pdfDocument.text('HR Team', { italic: true });
+  pdfDocument.text('TheWebSeller Pvt. Ltd.', { italic: true });
+
+  pdfDocument.end();
+};
+
+
+
+
+
+
+
+
+
+
+
+
+
+// Utility function to send a signup confirmation email
+
+const sendSignupConfirmationEmail = async (email, name) => {
   try {
-    const existingEmployee = await Employee.findOne({ email });
-    if (existingEmployee) {
-      return res.status(400).json({ message: 'Employee already exists' });
-    }
-
-    // Hash the password
-    const hashedPassword = await bcrypt.hash(password, 10);
-
-    // Set approval status based on role
-    const approvalStatus = role === 'admin' ? 'approved' : 'pending';
-
-    const employee = new Employee({
-      name,
-      email,
-      password: hashedPassword,
-      role,
-      department,
-      contactNumber,
-      address,
-      dateOfBirth,
-      approvalStatus,
+    let transporter = nodemailer.createTransport({
+      service: 'gmail',
+      auth: {
+        user: process.env.EMAIL_USER,
+        pass: process.env.EMAIL_PASS,
+      },
     });
 
-    await employee.save();
+    const mailOptions = {
+      from: process.env.EMAIL_USER,
+      to: email,
+      subject: 'Offer Letter from TheWebSeller Pvt. Ltd.',
+      text: `Dear ${name},\n\n` +
+            `We are pleased to welcome you to TheWebSeller Pvt. Ltd.\n\n` +
+            `Your account has been successfully created, and you are now ready to get started.\n\n` +
+            `To make the most of your account, we kindly ask you to complete the following steps:\n\n` +
+            `1. Log in to your account.\n` +
+            `2. Complete your profile in the 'Account Settings' section.\n` +
+            `3. Explore the available features and resources.\n\n` +
+            `If you need any assistance, please do not hesitate to contact us at support@thewebseller.com.\n\n` +
+            `We are excited to have you on board and look forward to working with you.\n\n` +
+            `Best regards,\n` +
+            `The HR Team\n` +
+            `TheWebSeller Pvt. Ltd.\n\n` +
+            `Please check your inbox for our newsletter containing the latest updates and offers.`
+    };
 
-    // Generate token
-    const token = jwt.sign(
-      { id: employee._id, role: employee.role },
-      process.env.JWT_SECRET,
-      { expiresIn: '1h' }
-    );
-
-    res.status(201).json({ message: 'Employee created successfully', token, id: employee._id });
+    await transporter.sendMail(mailOptions);
+    console.log('Confirmation email sent successfully.');
   } catch (error) {
-    console.error('Signup error:', error);
-    res.status(500).json({ message: error.message });
+    console.error('Error sending confirmation email:', error);
   }
 };
 
-// Login Logic
-const login = async (req, res) => {
-  const { email, password } = req.body;
 
+const signup = async (req, res) => {
   try {
+    const { name, email, password, role, manager, department, contactNumber, address } = req.body;
+
+    // Check if the email already exists in the database
+    const existingUser = await Employee.findOne({ email });
+    if (existingUser) {
+      return res.status(400).json({ message: 'Email already exists' });
+    }
+
+    // Create a new employee record
+    const newEmployee = new Employee({
+      name,
+      email,
+      password,
+      role: role || 'employee', // Default role to 'employee' if not provided
+      manager,
+      department,
+      contactNumber,
+      address
+    });
+
+    // Save the new employee to the database
+    await newEmployee.save();
+
+    // Generate JWT token using the new employee's id and role
+    const token = jwt.sign({ id: newEmployee._id, role: newEmployee.role }, process.env.JWT_SECRET, { expiresIn: '1h' });
+
+    // Prepare employee details for the offer letter
+    const employeeDetails = {
+      name: newEmployee.name,
+      role: newEmployee.role,
+      department: newEmployee.department,
+      salary: 'N/A',
+      dateOfJoining: 'N/A',
+      empId: 'N/A',
+      contactNumber: newEmployee.contactNumber || 'N/A',
+      address: newEmployee.address || 'N/A',
+      gender: 'N/A',
+      employmentType: 'N/A',
+      managerName: 'N/A',
+      emergencyContact: 'N/A',
+      skills: [],
+      certifications: [],
+      performanceRating: 'N/A',
+      lastPromotionDate: 'N/A',
+      workLocation: 'N/A',
+      probationPeriodEnd: 'N/A',
+    };
+
+    // Send the offer letter and signup confirmation email
+    await sendOfferLetter(newEmployee.email, employeeDetails);
+    await sendSignupConfirmationEmail(newEmployee.email, newEmployee.name);
+
+    // Respond with the token, userId, and employee details
+    res.status(201).json({
+      message: 'Employee registered successfully',
+      token,  // Send back the JWT token
+      userId: newEmployee._id,  // Send back the new employee's id
+      employee: { name: newEmployee.name, email: newEmployee.email, role: newEmployee.role }
+    });
+
+  } catch (error) {
+    // Catch any errors and send a 500 response
+    console.error(error);
+    res.status(500).json({ message: 'Server error during signup' });
+  }
+};
+
+
+const login = async (req, res) => {
+  try {
+    const { email, password } = req.body;
+
     const employee = await Employee.findOne({ email });
     if (!employee) {
-      return res.status(404).json({ message: 'Employee not found' });
+      return res.status(400).json({ message: 'Invalid email or password' });
     }
 
-    const isMatch = await bcrypt.compare(password, employee.password);
+    const isMatch = await employee.comparePassword(password);
     if (!isMatch) {
-      return res.status(400).json({ message: 'Invalid credentials' });
+      return res.status(400).json({ message: 'Invalid email or password' });
     }
 
-    const approvalStatus = employee.approvalStatus === 'approved' ? 'approved' : 'pending';
-
-    const token = jwt.sign(
-      { id: employee._id, role: employee.role },
-      process.env.JWT_SECRET,
-      { expiresIn: '1h' }
-    );
+    const token = jwt.sign({ id: employee._id , role: employee.role }, process.env.JWT_SECRET, { expiresIn: '1h' });
 
     res.status(200).json({
       message: 'Login successful',
       token,
-      id: employee._id,
-      role: employee.role,
-      approvalStatus,
+      userId: employee._id,
+      employee: { name: employee.name, email: employee.email, role: employee.role }
     });
-
   } catch (error) {
-    console.error('Login error:', error);
-    res.status(500).json({ message: 'Server error' });
+    res.status(500).json({ message: 'Server error during login' });
   }
 };
+
 
 // Create New Employee
 const createEmployee = async (req, res) => {
@@ -242,6 +355,7 @@ const approveRejectEmployee = async (req, res) => {
       return res.status(404).json({ message: 'Employee not found' });
     }
 
+    // Automatically approve admin roles
     if (employee.role === 'admin') {
       employee.approvalStatus = 'approved';
       await employee.save();
@@ -251,7 +365,8 @@ const approveRejectEmployee = async (req, res) => {
     employee.approvalStatus = status === 'approved' ? 'approved' : 'rejected';
     await employee.save();
 
-    if (status === 'approved') {
+    // Send offer letter if approved
+    if (status === 'approved' && employee.role !== 'admin') {
       sendOfferLetter(employee.email, employee);
     }
 
@@ -260,6 +375,7 @@ const approveRejectEmployee = async (req, res) => {
     res.status(500).json({ message: error.message });
   }
 };
+
 
 // Update Profile (Password, Email, Image)
 const updateProfile = async (req, res) => {
@@ -282,10 +398,112 @@ const updateProfile = async (req, res) => {
 
     await employee.save();
     res.status(200).json({ message: 'Profile updated successfully', employee });
-  } catch (error) {
+  }    catch (error) {
     res.status(500).json({ message: error.message });
   }
 };
+
+// Upload Employee Image
+const uploadEmployeeImage = async (req, res) => {
+  try {
+    const employee = await Employee.findById(req.params.id);
+    if (!employee) {
+      return res.status(404).json({ message: 'Employee not found' });
+    }
+
+    if (!req.file) {
+      return res.status(400).json({ message: 'No file uploaded' });
+    }
+
+    const image = req.file.path; // Path of the uploaded image
+    employee.image = image; // Save image path to the employee object
+    await employee.save();
+
+    res.status(200).json({
+      message: 'Image uploaded successfully',
+      image: employee.image
+    });
+  } catch (error) {
+    console.error('Error in uploading image:', error);
+    res.status(500).json({ message: 'Failed to upload image', error: error.message });
+  }
+};
+
+
+// Get Employee Image
+const getEmployeeImage = async (req, res) => {
+  try {
+    const employee = await Employee.findById(req.params.id);
+    if (!employee) {
+      return res.status(404).json({ message: 'Employee not found' });
+    }
+
+    if (!employee.image) {
+      return res.status(404).json({ message: 'No image found for this employee' });
+    }
+
+    res.status(200).json({ image: employee.image });
+  } catch (error) {
+    console.error('Error fetching image:', error);
+    res.status(500).json({ message: 'Failed to fetch image', error: error.message });
+  }
+};
+
+
+// Update Employee Image
+const updateEmployeeImage = async (req, res) => {
+  try {
+    const employee = await Employee.findById(req.params.id);
+    if (!employee) {
+      return res.status(404).json({ message: 'Employee not found' });
+    }
+
+    if (!req.file) {
+      return res.status(400).json({ message: 'No file uploaded' });
+    }
+
+    const image = req.file.path; // Path of the new uploaded image
+    employee.image = image; // Update image path
+    await employee.save();
+
+    res.status(200).json({
+      message: 'Image updated successfully',
+      image: employee.image
+    });
+  } catch (error) {
+    console.error('Error updating image:', error);
+    res.status(500).json({ message: 'Failed to update image', error: error.message });
+  }
+};
+
+
+
+// Delete Employee Image
+const deleteEmployeeImage = async (req, res) => {
+  try {
+    const employee = await Employee.findById(req.params.id);
+    if (!employee) {
+      return res.status(404).json({ message: 'Employee not found' });
+    }
+
+    if (!employee.image) {
+      return res.status(404).json({ message: 'No image found for this employee' });
+    }
+
+    // Delete the image file from the filesystem
+    fs.unlinkSync(employee.image); // Sync delete for simplicity (may need async in a real-world case)
+
+    // Remove the image path from the employee record
+    employee.image = null;
+    await employee.save();
+
+    res.status(200).json({ message: 'Image deleted successfully' });
+  } catch (error) {
+    console.error('Error deleting image:', error);
+    res.status(500).json({ message: 'Failed to delete image', error: error.message });
+  }
+};
+
 
 module.exports = {
   signup,
@@ -299,10 +517,12 @@ module.exports = {
   getManagedEmployees,
   getMyDetails,
   approveRejectEmployee,
-  updateProfile
+  updateProfile,
+  uploadEmployeeImage,
+  getEmployeeImage,
+  updateEmployeeImage,
+  deleteEmployeeImage
 };
-
-
 
 
 
